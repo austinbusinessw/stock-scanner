@@ -1,10 +1,11 @@
 name: Daily Stock Scanner
 
 on:
-  schedule:
-    - cron: '0 22 * * 1-5'  # 6 PM ET Mon-Fri
-  workflow_dispatch:
-
+ schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:  # ← ADD LINE HERE
+jobs:
+  ...
 jobs:
   scan:
     runs-on: ubuntu-latest
