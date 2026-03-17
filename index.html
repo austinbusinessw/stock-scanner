@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stock Scanner For Dad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#0b1120; color:#e5e7eb; margin:0; padding:0; }
+    header { padding:16px 24px; border-bottom:1px solid #1f2937; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+    h1 { margin:0; font-size:20px; }
+    .subtitle { font-size:13px; color:#9ca3af; margin-top:4px; }
+    .updated { font-size:13px; color:#9ca3af; }
+    main { padding:16px 24px 32px; max-width:1100px; margin:0 auto; }
+    .groups { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
+    .card { background:#020617; border:1px solid #1f2937; border-radius:10px; padding:14px 14px 10px; box-shadow:0 10px 25px rgba(0,0,0,0.35); }
+    .card h2 { margin:0 0 4px; font-size:17px; }
+    .card p { margin:0 0 8px; font-size:12px; color:#9ca3af; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { padding:4px 0; text-align:left; }
+    th { font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#9ca3af; border-bottom:1px solid #1f2937; }
+    tr + tr td { border-top:1px solid #111827; }
+    .symbol { font-weight:600; }
+    .tag { display:inline-block; padding:1px 6px; border-radius:999px; font-size:10px; margin-left:4px; background:#111827; color:#9ca3af; }
+    .empty { font-size:12px; color:#6b7280; padding:8px 0; }
+    footer { padding:12px 24px 18px; font-size:11px; color:#6b7280; border-top:1px solid #1f2937; text-align:center; }
+    @media (max-width: 640px) {
+      header, main, footer { padding-left:14px; padding-right:14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Stock Scanner For Dad</h1>
+      <div class="subtitle">Groups 1–3 based on Austin&apos;s rules, updated daily after market close.</div>
+    </div>
+    <div class="updated" id="last-updated">
+      Loading last update…
+    </div>
+  </header>
+
+  <main>
+    <div class="groups">
+      <section class="card">
+        <h2>Group 1</h2>
+        <p>Large candle body, larger-than-normal range, and volume above 20‑day average.</p>
+        <div id="group1-container"></div>
+      </section>
+
+      <section class="card">
+        <h2>Group 2</h2>
+        <p>20 &amp; 200 SMAs close together and flat, with a quiet daily range.</p>
+        <div id="group2-container"></div>
+      </section>
+
+      <section class="card">
+        <h2>Group 3</h2>
+        <p>Large caps with strong trend plus pullback and confirmation indicators.</p>
+        <div id="group3-container"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    This page is informational only and based on end‑of‑day data. Criteria are fixed by Austin.
+  </footer>
+
+  <script>
+    async function fetchGroup(name) {
+      try {
+        const res = await fetch(name + '.json?_=' + Date.now());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch (e) {
+        console.error('Error loading ' + name, e);
+        return { updated: null, items: [] };
+      }
+    }
+
+    function renderTable(containerId, data) {
+      const container = document.getElementById(containerId);
+      if (!data.items || data.items.length === 0) {
+        container.innerHTML = '<div class="empty">No matches for the latest trading day.</div>';
+        return;
+      }
+      const rows = data.items.map(item => `
+        <tr>
+          <td class="symbol">${item.symbol}</td>
+          <td>${item.name || ''}</td>
+          <td>${item.close != null ? item.close.toFixed(2) : ''}</td>
+          <td>${item.changePct != null ? (item.changePct * 100).toFixed(2) + '%': ''}</td>
+        </tr>
+      `).join('');
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Name</th>
+              <th>Close</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function setLastUpdated(dates) {
+      const el = document.getElementById('last-updated');
+      const valid = dates.filter(Boolean);
+      if (!valid.length) {
+        el.textContent = 'Last updated: waiting for first scan…';
+        return;
+      }
+      const last = valid.sort().slice(-1)[0];
+      el.textContent = 'Last updated: ' + last;
+    }
+
+    async function init() {
+      const [g1, g2, g3] = await Promise.all([
+        fetchGroup('group1'),
+        fetchGroup('group2'),
+        fetchGroup('group3'),
+      ]);
+      renderTable('group1-container', g1);
+      renderTable('group2-container', g2);
+      renderTable('group3-container', g3);
+      setLastUpdated([g1.updated, g2.updated, g3.updated]);
+    }
+
+    init();
+  </script>
+</body>
+</html>
