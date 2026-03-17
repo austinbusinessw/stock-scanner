@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,8 +36,9 @@ jobs:
 
       - name: Commit updated JSON files
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add group1.json group2.json group3.json signals.json
-          git diff --staged --quiet || git commit -m "Update scan [skip ci]"
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update scan data [skip ci]"
           git push
