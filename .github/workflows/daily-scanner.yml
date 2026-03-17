@@ -14,15 +14,16 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install packages
-        run: pip install requests pandas pandas-ta numpy
+        run: |
+          pip install requests pandas pandas-ta numpy
       - name: Run scanner
         env:
           TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
         run: python scanner.py
-      - name: Commit JSON results
+      - name: Commit results
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add group*.json
-          git diff --staged --quiet || git commit -m "Update scan results [skip ci]"
+          git add *.json
+          git diff --staged --quiet || git commit -m "Update scan [skip ci]" || true
           git push
