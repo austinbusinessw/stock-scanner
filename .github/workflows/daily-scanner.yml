@@ -18,9 +18,10 @@ jobs:
           pip install requests pandas pandas-ta numpy
       - name: Run scanner
         env:
-          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
-        run: python scanner.py
-      - name: Commit results
+        - name: Run scanner
+  run: python scanner.py
+  env:
+    TIINGO_API_KEY: ${{ secrets.TIINGO
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
