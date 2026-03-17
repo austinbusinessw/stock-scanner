@@ -2,25 +2,33 @@ name: Daily Stock Scanner
 
 on:
   schedule:
-    - cron '0 20 * * *'
+    - cron: '0 20 * * *'
   workflow_dispatch:
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install packages
         run: |
           pip install requests pandas pandas-ta numpy
+
       - name: Run scanner
         env:
-        - name: Run scanner
-  run: python scanner.py
-  env:
-    TIINGO_API_KEY: ${{ secrets.TIINGO
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+        run: |
+          python scanner.py
+
+      - name: Commit updated JSON files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
