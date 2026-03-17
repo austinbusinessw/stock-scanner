@@ -1,10 +1,11 @@
 name: Daily Stock Scanner
 
 on:
- schedule:
+  schedule:
     - cron: '0 20 * * *'
-  workflow_dispatch:  # ← ADD LINE HERE
+  workflow_dispatch:
 jobs:
+
   ...
 jobs:
   scan:
